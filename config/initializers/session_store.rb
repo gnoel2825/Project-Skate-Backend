@@ -2,7 +2,7 @@
 if Rails.env.production?
   Rails.application.config.session_store :cookie_store,
     key: "_authentication_app",
-    domain: "your-production-app.com",
+    domain: "glisse-frontend.onrender.com/",
     secure: true,
     same_site: :lax
 else
@@ -10,4 +10,10 @@ else
     key: "_authentication_app",
     same_site: :lax
 end
+
+Rails.application.config.session_store :cookie_store,
+  key: "_project_skate_session",
+  same_site: :none,
+  secure: Rails.env.production?
+
 
