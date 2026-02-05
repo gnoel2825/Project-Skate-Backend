@@ -32,3 +32,12 @@
 /config/*.key
 
 node_modules
+
+# Frontend should live in its own repo (do not commit to backend)
+node_modules/
+src/
+public/index.html
+package.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
