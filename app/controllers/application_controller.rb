@@ -25,6 +25,8 @@ end
     return @current_user if defined?(@current_user)
 
     auth = request.headers["Authorization"].to_s
+Rails.logger.info "AUTH HEADER: #{auth.inspect}"
+
     token = auth.start_with?("Bearer ") ? auth.split(" ", 2).last : nil
     @current_user = token.present? ? User.find_by(auth_token: token) : nil
   end
