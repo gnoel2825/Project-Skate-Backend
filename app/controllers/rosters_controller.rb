@@ -86,25 +86,40 @@ end
   def add_student
   roster = Roster.find(params[:roster_id] || params[:id])
 
-  allowed = current_user&.admin? || roster.teachers.exists?(id: current_user.id)
+  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+
+  allowed = current_user&.admin? || teacher_ids.include?(current_user.id)
   return render(json: { error: "Not authorized" }, status: :unauthorized) unless allowed
 
-  student = Student.find(params[:student_id])
+  # optional but recommended: only allow adding students owned by any teacher on this roster
+  student = Student.where(teacher_id: teacher_ids).find(params[:student_id])
 
   roster.students << student unless roster.students.exists?(student.id)
-  render json: roster, include: :students
+
+  render json: roster.as_json(
+    only: [:id, :name],
+    include: { students: { only: [:id, :first_name, :last_name, :email] } }
+  )
 end
+
 
   # DELETE /rosters/:roster_id/remove_student/:student_id
   def remove_student
-    student = current_user.students.find(params[:student_id])
-    @roster.students.destroy(student)
+  roster = @roster
+  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
 
-    render json: @roster.reload.as_json(
-      only: [:id, :name],
-      include: { students: { only: [:id, :first_name, :last_name, :email] } }
-    )
-  end
+  allowed = current_user&.admin? || teacher_ids.include?(current_user.id)
+  return render(json: { error: "Not authorized" }, status: :unauthorized) unless allowed
+
+  student = Student.where(teacher_id: teacher_ids).find(params[:student_id])
+  roster.students.destroy(student)
+
+  render json: roster.reload.as_json(
+    only: [:id, :name],
+    include: { students: { only: [:id, :first_name, :last_name, :email] } }
+  )
+end
+
 
   # GET /rosters/:id/scheduled_lessons
   # app/controllers/rosters_controller.rb (or wherever scheduled_lessons lives)
@@ -472,9 +487,10 @@ end
   end
 
   def require_teacher
-    return if current_user&.teacher?
-    render json: { errors: ["This component is restricted to instructor accounts only. If you are an instructor or administrator, an admin account must manually assign that role to you in the admin panel for you to access this component."] }, status: :unauthorized
-  end
+  return if current_user&.teacher? || current_user&.admin?
+  render json: { errors: ["Instructor accounts only."] }, status: :unauthorized
+end
+
 
   def build_instances(schedules, from_date, to_date)
     instances = []
