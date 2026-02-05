@@ -10,9 +10,8 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def require_login
-    return if session[:user_id].present?
-
+   def require_login
+    return if current_user.present?
     render json: { error: "Not authorized" }, status: :unauthorized
   end
 
@@ -21,14 +20,24 @@ class ApplicationController < ActionController::Base
   render json: { errors: ["Admins only"] }, status: :unauthorized
 end
 
-  def current_user
+   def current_user
     return @current_user if defined?(@current_user)
 
-    auth = request.headers["Authorization"].to_s
-Rails.logger.info "AUTH HEADER: #{auth.inspect}"
+    # 1) Bearer token auth
+    auth_header = request.headers["Authorization"].to_s
+    if auth_header.start_with?("Bearer ")
+      token = auth_header.split(" ", 2).last
+      @current_user = User.find_by(auth_token: token)
+      return @current_user
+    end
 
-    token = auth.start_with?("Bearer ") ? auth.split(" ", 2).last : nil
-    @current_user = token.present? ? User.find_by(auth_token: token) : nil
+    # 2) Session fallback
+    if session[:user_id].present?
+      @current_user = User.find_by(id: session[:user_id])
+      return @current_user
+    end
+
+    @current_user = nil
   end
 
     def no_store_json
