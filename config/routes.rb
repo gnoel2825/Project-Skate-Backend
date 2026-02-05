@@ -68,4 +68,5 @@ get "/students_from_rosters", to: "students#from_rosters"
 
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
+  get "/version", to: proc { [200, { "Content-Type" => "application/json" }, [{ sha: ENV["RENDER_GIT_COMMIT"] || "unknown" }.to_json]] }
 end
