@@ -6,9 +6,13 @@ class RegistrationsController < ApplicationController
 
     if user.save
       session[:user_id] = user.id
+
+      safe_user = user.as_json(only: [:id, :email, :first_name, :last_name, :created_at, :updated_at])
+
+
       render json: {
         logged_in: true,
-        user: user.as_json(only: [:id, :email, :created_at, :updated_at])
+        user: safe_user
       }, status: :created
     else
       render json: {
@@ -21,6 +25,6 @@ class RegistrationsController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:email, :password, :password_confirmation)
+  params.require(:user).permit(:email, :password, :password_confirmation, :first_name, :last_name)
   end
 end

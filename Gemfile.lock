@@ -322,6 +322,7 @@ DEPENDENCIES
   rack-cors
   rails (~> 8.1.1)
   rubocop-rails-omakase
+  ruby-vips (~> 2.3)
   solid_cable
   solid_cache
   solid_queue

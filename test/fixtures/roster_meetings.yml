@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  roster: one
+  taught_on: 2026-01-09
+  starts_at: 2026-01-09 15:59:25
+  ends_at: 2026-01-09 15:59:25
+  location: MyString
+
+two:
+  roster: two
+  taught_on: 2026-01-09
+  starts_at: 2026-01-09 15:59:25
+  ends_at: 2026-01-09 15:59:25
+  location: MyString

@@ -1,56 +1,63 @@
+# app/controllers/sessions_controller.rb
 class SessionsController < ApplicationController
-  include CurrentUserConcern
+  include Rails.application.routes.url_helpers
 
-  # If you have a require_login in ApplicationController, allow these:
-  skip_before_action :require_login, only: [:create, :logged_in]
+  skip_before_action :require_login, only: [:create, :logged_in, :destroy]
 
-  # POST /sessions
   def create
-  email = session_params[:email].to_s.strip.downcase
-  password = session_params[:password].to_s
+  user = User.find_by(email: params[:user][:email])
 
-  Rails.logger.info("LOGIN DEBUG email=#{email.inspect} password_len=#{password.length}")
-  user = User.find_by(email: email)
-  Rails.logger.info("LOGIN DEBUG user_found=#{user.present?} user_id=#{user&.id}")
-  Rails.logger.info("LOGIN DEBUG digest_present=#{user&.password_digest.present?}")
-  Rails.logger.info("LOGIN DEBUG auth_result=#{user&.authenticate(password).present?}")
-
-  if user&.authenticate(password)
+  if user&.authenticate(params[:user][:password])
     session[:user_id] = user.id
-    render json: { logged_in: true, user: user }, status: :ok
+    render json: {
+      logged_in: true,
+      user: user.as_json(only: [:id, :email, :first_name, :last_name, :role])
+    }, status: :created
   else
     render json: { logged_in: false, errors: ["Invalid email or password"] }, status: :unauthorized
   end
 end
 
-
-  # GET /logged_in
-  def logged_in
-    if @current_user
-      render json: { logged_in: true, user: @current_user }, status: :ok
-    else
-      render json: { logged_in: false }, status: :ok
-    end
+def logged_in
+  if current_user
+    render json: {
+      logged_in: true,
+      user: current_user.as_json(only: [:id, :email, :first_name, :last_name, :role])
+    }
+  else
+    render json: { logged_in: false }
   end
+end
 
-  # DELETE /logout  (or DELETE /sessions)
   def destroy
     reset_session
-    render json: { logged_out: true }, status: :ok
+    render json: { ok: true }
   end
 
   private
 
-  # Supports BOTH:
-  # { "user": { "email": "...", "password": "..." } }
-  # and { "email": "...", "password": "..." }
-  def session_params
-    if params[:user].present?
-      params.require(:user).permit(:email, :password)
-    else
-      params.permit(:email, :password)
-    end
+  # Ensure url_for generates absolute URLs
+  def default_url_options
+    { host: "localhost", port: 3000, protocol: "http" }
+  end
+
+  def safe_user_with_icon(user)
+    base = user.as_json(only: [:id, :email, :first_name, :last_name, :created_at, :updated_at])
+
+    base.merge(
+      icon_url: icon_url(user),
+      icon_100_url: icon_100_url(user)
+    )
+  end
+
+  def icon_url(user)
+    return nil unless user&.icon&.attached?
+    url_for(user.icon)
+  end
+
+  def icon_100_url(user)
+    return nil unless user&.icon&.attached?
+    variant = user.icon.variant(resize_to_fill: [100, 100]).processed
+    url_for(variant)
   end
 end
-
-

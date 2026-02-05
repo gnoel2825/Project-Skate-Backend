@@ -31,5 +31,6 @@ module ProjectSkate1
     config.middleware.use ActionDispatch::Cookies
     config.middleware.use ActionDispatch::Session::CookieStore
     config.middleware.use ActionDispatch::Flash
+    config.active_storage.draw_routes = true
   end
 end

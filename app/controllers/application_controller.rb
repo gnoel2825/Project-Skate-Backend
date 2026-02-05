@@ -1,10 +1,12 @@
 class ApplicationController < ActionController::Base
   before_action :require_login
   helper_method :current_user
+  before_action :no_store_json
 
   # For a separate React frontend, disabling CSRF protection is common in dev.
   # (More secure option later: use CSRF tokens properly.)
   skip_before_action :verify_authenticity_token
+ 
 
   private
 
@@ -14,7 +16,22 @@ class ApplicationController < ActionController::Base
     render json: { error: "Not authorized" }, status: :unauthorized
   end
 
+  def require_admin
+  return if current_user&.admin?
+  render json: { errors: ["Admins only"] }, status: :unauthorized
+end
+
   def current_user
     @current_user ||= User.find_by(id: session[:user_id])
   end
+
+    def no_store_json
+    return unless request.format.json?
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    response.headers.delete("ETag")
+    response.headers.delete("Last-Modified")
+  end
+
 end

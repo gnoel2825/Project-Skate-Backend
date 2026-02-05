@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  lesson_plan: one
+  skill: one
+  position: 1
+  notes: MyText
+
+two:
+  lesson_plan: two
+  skill: two
+  position: 1
+  notes: MyText
