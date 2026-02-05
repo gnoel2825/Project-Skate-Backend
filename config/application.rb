@@ -31,5 +31,11 @@ module ProjectSkate1
     config.middleware.use ActionDispatch::Cookies
     config.active_storage.draw_routes = true
 
+
+config.middleware.use ActionDispatch::Session::CookieStore,
+  key: "_project_skate_session",
+  same_site: :none,
+  secure: true
+
   end
 end
