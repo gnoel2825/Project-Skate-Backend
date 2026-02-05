@@ -84,15 +84,16 @@ end
 
   # POST /rosters/:roster_id/add_student/:student_id
   def add_student
-    student = current_user.students.find(params[:student_id])
+  roster = Roster.find(params[:roster_id] || params[:id])
 
-    @roster.students << student unless @roster.students.exists?(student.id)
+  allowed = current_user&.admin? || roster.teachers.exists?(id: current_user.id)
+  return render(json: { error: "Not authorized" }, status: :unauthorized) unless allowed
 
-    render json: @roster.reload.as_json(
-      only: [:id, :name],
-      include: { students: { only: [:id, :first_name, :last_name, :email] } }
-    )
-  end
+  student = Student.find(params[:student_id])
+
+  roster.students << student unless roster.students.exists?(student.id)
+  render json: roster, include: :students
+end
 
   # DELETE /rosters/:roster_id/remove_student/:student_id
   def remove_student
