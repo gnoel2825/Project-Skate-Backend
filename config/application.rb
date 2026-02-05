@@ -29,7 +29,7 @@ module ProjectSkate1
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
     config.middleware.use ActionDispatch::Cookies
-    config.middleware.use ActionDispatch::Session::CookieStore,
+    config.middleware.use ActionDispatch::Session::CookieStore
     config.middleware.use ActionDispatch::Flash
     config.active_storage.draw_routes = true
   end
