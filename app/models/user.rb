@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_many :roster_teachings, class_name: "RosterTeacher", foreign_key: :teacher_id, dependent: :destroy
   has_many :taught_rosters, through: :roster_teachings, source: :roster
 
+  before_create :ensure_auth_token
   after_create_commit :attach_default_icon
 
 
@@ -44,6 +45,15 @@ end
   def welcome
     "Hello, #{email}!"
   end
+
+     def ensure_auth_token
+    self.auth_token ||= SecureRandom.hex(32)
+  end
+
+  def reset_auth_token!
+    update!(auth_token: SecureRandom.hex(32))
+  end
+
 
    private
 

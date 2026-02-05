@@ -7,15 +7,13 @@ class SessionsController < ApplicationController
   def create
   user = User.find_by(email: params[:user][:email])
 
-  if user&.authenticate(params[:user][:password])
-    session[:user_id] = user.id
-    render json: {
-      logged_in: true,
-      user: user.as_json(only: [:id, :email, :first_name, :last_name, :role])
-    }, status: :created
-  else
-    render json: { logged_in: false, errors: ["Invalid email or password"] }, status: :unauthorized
-  end
+  if user&.authenticate(params.dig(:user, :password))
+      user.reset_auth_token! if user.auth_token.blank?
+      render json: { user: user.as_json(only: [:id, :email, :first_name, :last_name, :role]),
+                    token: user.auth_token }, status: :created
+    else
+      render json: { error: "Invalid email or password" }, status: :unauthorized
+    end
 end
 
 def logged_in
@@ -30,16 +28,14 @@ def logged_in
 end
 
   def destroy
-    reset_session
-    render json: { ok: true }
+  if current_user
+    current_user.reset_auth_token!
   end
+  render json: { ok: true }
+end
 
   private
 
-  # Ensure url_for generates absolute URLs
-  def default_url_options
-    { host: "localhost", port: 3000, protocol: "http" }
-  end
 
   def safe_user_with_icon(user)
     base = user.as_json(only: [:id, :email, :first_name, :last_name, :created_at, :updated_at])

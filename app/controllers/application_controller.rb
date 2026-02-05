@@ -22,7 +22,11 @@ class ApplicationController < ActionController::Base
 end
 
   def current_user
-    @current_user ||= User.find_by(id: session[:user_id])
+    return @current_user if defined?(@current_user)
+
+    auth = request.headers["Authorization"].to_s
+    token = auth.start_with?("Bearer ") ? auth.split(" ", 2).last : nil
+    @current_user = token.present? ? User.find_by(auth_token: token) : nil
   end
 
     def no_store_json

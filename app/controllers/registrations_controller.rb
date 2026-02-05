@@ -5,18 +5,16 @@ class RegistrationsController < ApplicationController
     user = User.new(user_params)
 
     if user.save
-      session[:user_id] = user.id
+      user.reset_auth_token! if user.auth_token.blank?
 
-      safe_user = user.as_json(only: [:id, :email, :first_name, :last_name, :created_at, :updated_at])
-
+      safe_user = user.as_json(only: [:id, :email, :first_name, :last_name, :role])
 
       render json: {
-        logged_in: true,
-        user: safe_user
+        user: safe_user,
+        token: user.auth_token
       }, status: :created
     else
       render json: {
-        logged_in: false,
         errors: user.errors.full_messages
       }, status: :unprocessable_entity
     end
