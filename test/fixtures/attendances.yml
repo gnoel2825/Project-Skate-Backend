@@ -3,11 +3,11 @@
 one:
   lesson_plan_occurrence: one
   student: one
-  status: MyString
-  note: MyText
+  status: present
+  note: none
 
 two:
   lesson_plan_occurrence: two
   student: two
-  status: MyString
-  note: MyText
+  status: absent
+  note: had a note

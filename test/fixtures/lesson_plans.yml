@@ -2,10 +2,10 @@
 
 one:
   teacher: one
-  title: MyString
+  title: Advanced 1
   description: MyText
 
 two:
   teacher: two
-  title: MyString
+  title: Swishes
   description: MyText

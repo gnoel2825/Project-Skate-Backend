@@ -2,16 +2,16 @@
 
 one:
   teacher: one
-  first_name: MyString
-  last_name: MyString
-  email: MyString
-  birthday: 2026-01-09
-  notes: MyText
+  first_name: B
+  last_name: Mein
+  email: b@student.com
+  birthday: 2026-01-07
+  notes: good
 
 two:
   teacher: two
-  first_name: MyString
-  last_name: MyString
-  email: MyString
+  first_name: Ava
+  last_name: Gardner
+  email: ava@student.com
   birthday: 2026-01-09
-  notes: MyText
+  notes: okay

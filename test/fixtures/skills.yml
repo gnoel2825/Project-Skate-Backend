@@ -1,13 +1,13 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  name: MyString
+  name: Backward Stroking
   level: 1
-  description: MyText
+  description: Beginner
   is_active: false
 
 two:
-  name: MyString
+  name: Forward Stroking
   level: 1
-  description: MyText
+  description: Beginner
   is_active: false
