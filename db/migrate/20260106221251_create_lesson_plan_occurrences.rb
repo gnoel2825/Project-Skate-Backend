@@ -10,6 +10,6 @@ class CreateLessonPlanOccurrences < ActiveRecord::Migration[7.0]
     end
 
     add_index :lesson_plan_occurrences, :taught_on
-    add_index :lesson_plan_occurrences, [:lesson_plan_id, :taught_on]
+    add_index :lesson_plan_occurrences, [ :lesson_plan_id, :taught_on ]
   end
 end

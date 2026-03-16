@@ -6,6 +6,6 @@ class CreateRosterTeachers < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    add_index :roster_teachers, [:roster_id, :teacher_id], unique: true
+    add_index :roster_teachers, [ :roster_id, :teacher_id ], unique: true
   end
 end

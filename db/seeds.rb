@@ -126,7 +126,7 @@ LAST_NAMES = %w[
     last_name: last,
     email: "#{first.downcase}.#{last.downcase}#{i}@student.com",
     birthday: Date.today - rand(6..16).years,
-    notes: ["Focus on edges", "Working on spins", "Needs confidence", nil].sample
+    notes: [ "Focus on edges", "Working on spins", "Needs confidence", nil ].sample
   )
 end
 
@@ -180,8 +180,8 @@ end
 def rand_time_range
   # 30/45/60 min lessons starting between 3pm–8pm
   start_hour = rand(15..20)
-  start_min  = [0, 15, 30, 45].sample
-  duration  = [30, 45, 60].sample
+  start_min  = [ 0, 15, 30, 45 ].sample
+  duration  = [ 30, 45, 60 ].sample
 
   start_str = format("%02d:%02d", start_hour, start_min)
   # compute end
@@ -190,7 +190,7 @@ def rand_time_range
   end_min  = end_minutes % 60
   end_str  = format("%02d:%02d", end_hour, end_min)
 
-  [start_str, end_str]
+  [ start_str, end_str ]
 end
 
 lesson_plans_to_create = 30
@@ -238,7 +238,7 @@ puts "✅ Seeded #{LessonPlanOccurrence.count} lesson plan occurrences"
 teacher = User.find_by!(email: "test@example.com")
 students = teacher.students.limit(40).to_a
 
-["Sat AM Group", "Basic 2", "Private Students", "Power + Edges"].each do |name|
+[ "Sat AM Group", "Basic 2", "Private Students", "Power + Edges" ].each do |name|
   r = teacher.rosters.create!(name: name)
   r.students << students.sample(rand(6..14))
 end
@@ -248,8 +248,8 @@ puts "🌱 Seeding complete!"
 teachers = [
   { first_name: "Ava",   last_name: "Nguyen",  email: "ava.nguyen@example.com",  password: "password" },
   { first_name: "Maya",  last_name: "Patel",   email: "maya.patel@example.com", password: "password" },
-  { first_name: "Jordan",last_name: "Kim",     email: "jordan.kim@example.com", password: "password" },
-  { first_name: "Elena", last_name: "Garcia",  email: "elena.garcia@example.com", password: "password" },
+  { first_name: "Jordan", last_name: "Kim",     email: "jordan.kim@example.com", password: "password" },
+  { first_name: "Elena", last_name: "Garcia",  email: "elena.garcia@example.com", password: "password" }
 ]
 
 teachers.each do |t|

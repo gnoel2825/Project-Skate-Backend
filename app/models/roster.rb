@@ -22,5 +22,4 @@ class Roster < ApplicationRecord
   has_many :teachers, through: :roster_teachers, source: :teacher
 
   has_many :lesson_plan_occurrences
-
 end

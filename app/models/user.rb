@@ -35,7 +35,7 @@ end
       errors.add(:icon, "must be less than 1MB")
     end
 
-    acceptable_types = ["image/jpeg", "image/png", "image/webp"]
+    acceptable_types = [ "image/jpeg", "image/png", "image/webp" ]
     unless acceptable_types.include?(icon.content_type)
       errors.add(:icon, "must be a JPEG, PNG, or WebP")
     end
@@ -68,5 +68,4 @@ end
       content_type: "image/png"
     )
   end
-
 end

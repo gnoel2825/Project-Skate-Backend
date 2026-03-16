@@ -36,6 +36,5 @@ config.middleware.use ActionDispatch::Session::CookieStore,
   key: "_project_skate_session",
   same_site: :none,
   secure: true
-
   end
 end
