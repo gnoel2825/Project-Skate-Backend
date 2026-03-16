@@ -12,6 +12,7 @@ module Admin
     # POST /admin/users
     def create
       user = User.new(admin_user_create_params)
+      user.role = params[:user][:role] if params[:user][:role].present?
 
       if user.save
         render json: user.as_json(only: [:id, :email, :first_name, :last_name, :role, :created_at]), status: :created
@@ -29,6 +30,7 @@ module Admin
       end
 
       if @user.update(admin_user_update_params)
+         @user.role = params[:user][:role] if params[:user][:role].present?
         render json: @user.as_json(only: [:id, :email, :first_name, :last_name, :role, :created_at]), status: :ok
       else
         render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
@@ -52,12 +54,12 @@ module Admin
     end
 
     def admin_user_create_params
-      params.require(:user).permit(:email, :first_name, :last_name, :role, :password, :password_confirmation)
+      params.require(:user).permit(:email, :first_name, :last_name, :password, :password_confirmation)
     end
 
     def admin_user_update_params
       # allow password reset if admin wants to set a new password
-      params.require(:user).permit(:email, :first_name, :last_name, :role, :password, :password_confirmation)
+      params.require(:user).permit(:email, :first_name, :last_name, :password, :password_confirmation)
     end
   end
 end
