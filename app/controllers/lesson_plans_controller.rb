@@ -1,8 +1,8 @@
 # app/controllers/lesson_plans_controller.rb
 class LessonPlansController < ApplicationController
   before_action :require_teacher
-  before_action :set_lesson_plan, only: [:show, :update, :destroy, :duplicate, :add_skills, :remove_skill]
-  before_action :no_store, only: [:index]
+  before_action :set_lesson_plan, only: [ :show, :update, :destroy, :duplicate, :add_skills, :remove_skill ]
+  before_action :no_store, only: [ :index ]
 
   # POST /lesson_plans
   def create
@@ -22,12 +22,12 @@ class LessonPlansController < ApplicationController
         .includes(:roster_schedules, :roster_meetings, :teachers)
         .find(params[:roster_id])
 
-      teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+      teacher_ids = ([ roster.teacher_id ] + roster.teachers.pluck(:id)).uniq
       weekly_blocks = roster.roster_schedules.to_a
       meetings = roster.roster_meetings.to_a
 
       occs = LessonPlanOccurrence
-        .includes(lesson_plan: [:skills, :warmup_skills, :cooldown_skills])
+        .includes(lesson_plan: [ :skills, :warmup_skills, :cooldown_skills ])
         .joins(:lesson_plan)
         .where(lesson_plans: { teacher_id: teacher_ids })
         .order(:taught_on, :starts_at)
@@ -64,9 +64,9 @@ class LessonPlansController < ApplicationController
             title: occ.lesson_plan.title,
             description: occ.lesson_plan.description,
             teacher_id: occ.lesson_plan.teacher_id,
-            skills: occ.lesson_plan.skills.as_json(only: [:id, :name, :level]),
-            warmup_skills: occ.lesson_plan.warmup_skills.as_json(only: [:id, :name, :level]),
-            cooldown_skills: occ.lesson_plan.cooldown_skills.as_json(only: [:id, :name, :level])
+            skills: occ.lesson_plan.skills.as_json(only: [ :id, :name, :level ]),
+            warmup_skills: occ.lesson_plan.warmup_skills.as_json(only: [ :id, :name, :level ]),
+            cooldown_skills: occ.lesson_plan.cooldown_skills.as_json(only: [ :id, :name, :level ])
           }
         }
       }
@@ -98,9 +98,9 @@ class LessonPlansController < ApplicationController
         teacher_id: lp.teacher_id,
         created_at: lp.created_at,
         updated_at: lp.updated_at,
-        skills: lp.skills.as_json(only: [:id, :name, :level]),
-        warmup_skills: lp.warmup_skills.as_json(only: [:id, :name, :level]),
-        cooldown_skills: lp.cooldown_skills.as_json(only: [:id, :name, :level]),
+        skills: lp.skills.as_json(only: [ :id, :name, :level ]),
+        warmup_skills: lp.warmup_skills.as_json(only: [ :id, :name, :level ]),
+        cooldown_skills: lp.cooldown_skills.as_json(only: [ :id, :name, :level ]),
         next_scheduled_at: next_dt
       }
     }
@@ -109,7 +109,7 @@ class LessonPlansController < ApplicationController
   # GET /lesson_plans/:id
   def show
     unless can_read_lesson_plan?(@lesson_plan)
-      return render json: { errors: ["Not authorized"] }, status: :unauthorized
+      return render json: { errors: [ "Not authorized" ] }, status: :unauthorized
     end
 
     lesson_plan = LessonPlan
@@ -126,7 +126,7 @@ class LessonPlansController < ApplicationController
       .find(params[:id])
 
     unless can_read_lesson_plan?(original)
-      return render json: { errors: ["Not authorized"] }, status: :unauthorized
+      return render json: { errors: [ "Not authorized" ] }, status: :unauthorized
     end
 
     duplicate = current_user.lesson_plans.new(
@@ -166,13 +166,13 @@ end
 
   # PATCH /lesson_plans/:id
   def update
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(@lesson_plan)
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless owns_lesson_plan?(@lesson_plan)
 
     LessonPlan.transaction do
      base_attrs = lesson_plan_params.except(:ordered_skills_by_role)
     unless @lesson_plan.update(base_attrs)
         return render json: { errors: @lesson_plan.errors.full_messages }, status: :unprocessable_entity
-      end
+    end
 
       if params.dig(:lesson_plan, :ordered_skills_by_role).present?
         sync_ordered_skills!
@@ -186,15 +186,15 @@ end
 
   # DELETE /lesson_plans/:id
   def destroy
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(@lesson_plan)
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless owns_lesson_plan?(@lesson_plan)
 
     @lesson_plan.destroy
     head :no_content
   end
 
-  # POST /lesson_plans/:id/add_skills
+# POST /lesson_plans/:id/add_skills
 def add_skills
-  return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(@lesson_plan)
+  return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless owns_lesson_plan?(@lesson_plan)
 
   role = normalize_role(params[:role])
   skill_ids = Array(params[:skill_ids]).map(&:to_i).uniq
@@ -226,7 +226,7 @@ end
 
   # DELETE /lesson_plans/:id/remove_skill/:skill_id
   def remove_skill
-  return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(@lesson_plan)
+  return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless owns_lesson_plan?(@lesson_plan)
 
   role = normalize_role(params[:role])
 
@@ -235,7 +235,7 @@ end
     role: role
   )
 
-  return render json: { errors: ["Skill not found"] }, status: :not_found unless lps
+  return render json: { errors: [ "Skill not found" ] }, status: :not_found unless lps
 
   removed_role = lps.role
   removed_position = lps.position
@@ -263,9 +263,9 @@ end
     :main_notes,
     :cooldown_notes,
     ordered_skills_by_role: {
-      main: [:skill_id, :role, :position],
-      warmup: [:skill_id, :role, :position],
-      cooldown: [:skill_id, :role, :position]
+      main: [ :skill_id, :role, :position ],
+      warmup: [ :skill_id, :role, :position ],
+      cooldown: [ :skill_id, :role, :position ]
     }
   )
 end
@@ -325,9 +325,9 @@ end
       warmup_notes: lp.warmup_notes,
       main_notes: lp.main_notes,
       cooldown_notes: lp.cooldown_notes,
-      skills: lp.skills.as_json(only: [:id, :name, :level]),
-      warmup_skills: lp.warmup_skills.as_json(only: [:id, :name, :level]),
-      cooldown_skills: lp.cooldown_skills.as_json(only: [:id, :name, :level]),
+      skills: lp.skills.as_json(only: [ :id, :name, :level ]),
+      warmup_skills: lp.warmup_skills.as_json(only: [ :id, :name, :level ]),
+      cooldown_skills: lp.cooldown_skills.as_json(only: [ :id, :name, :level ]),
       lesson_plan_occurrences: lp.lesson_plan_occurrences
         .order(:taught_on, :starts_at)
         .map do |occ|
@@ -352,7 +352,7 @@ end
 
   def require_teacher
     return if current_user&.teacher?
-    render json: { errors: ["Not authorized"] }, status: :unauthorized
+    render json: { errors: [ "Not authorized" ] }, status: :unauthorized
   end
 
   def set_lesson_plan
@@ -378,7 +378,7 @@ end
     rosters = member_rosters_relation.includes(:roster_schedules, :roster_meetings, :teachers)
     return [] if rosters.blank?
 
-    teacher_ids   = rosters.flat_map { |r| [r.teacher_id] + r.teachers.map(&:id) }.uniq
+    teacher_ids   = rosters.flat_map { |r| [ r.teacher_id ] + r.teachers.map(&:id) }.uniq
     weekly_blocks = rosters.flat_map(&:roster_schedules)
     meetings      = rosters.flat_map(&:roster_meetings)
 

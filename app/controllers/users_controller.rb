@@ -1,8 +1,8 @@
 class UsersController < ApplicationController
-  skip_before_action :require_login, only: [:new, :create]
+  skip_before_action :require_login, only: [ :new, :create ]
 
   def show; end
-  
+
   def index
     users = User.all
 
@@ -34,7 +34,7 @@ class UsersController < ApplicationController
   # PATCH /profile (via routes.rb -> users#update)
   def update
     user = current_user
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless user
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless user
 
     # normalize email if present
     if params.dig(:user, :email)
@@ -42,7 +42,7 @@ class UsersController < ApplicationController
     end
 
     if user.update(profile_params)
-      safe_user = user.as_json(only: [:id, :email, :first_name, :last_name, :created_at, :updated_at, :role]).merge(
+      safe_user = user.as_json(only: [ :id, :email, :first_name, :last_name, :created_at, :updated_at, :role ]).merge(
         icon_url: icon_url(user),
         icon_100_url: icon_100_url(user)
       )
@@ -55,7 +55,7 @@ class UsersController < ApplicationController
 
   def destroy
     user = current_user
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless user
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless user
 
     user.destroy!
     reset_session
@@ -85,7 +85,7 @@ class UsersController < ApplicationController
   def icon_100_url(user)
     return nil unless user.icon.attached?
 
-    variant = user.icon.variant(resize_to_fill: [100, 100]).processed
+    variant = user.icon.variant(resize_to_fill: [ 100, 100 ]).processed
     Rails.application.routes.url_helpers.rails_representation_url(
       variant,
       host: "localhost",

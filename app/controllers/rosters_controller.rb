@@ -8,29 +8,29 @@ class RostersController < ApplicationController
 ]
 
 
-  # GET /rosters
+ # GET /rosters
  def index
   return render json: { error: "Not authorized" }, status: :unauthorized unless current_user&.teacher?
 
   rosters = Roster.accessible_by(current_user).order(created_at: :desc)
-  render json: rosters, include: [:teacher, :teachers, :students, :roster_schedules]
+  render json: rosters, include: [ :teacher, :teachers, :students, :roster_schedules ]
 end
 
   # GET /rosters/:id
   def show
   render json: @roster.as_json(
-    only: [:id, :name],
+    only: [ :id, :name ],
     include: {
-      teacher: { only: [:id, :first_name, :last_name, :email, :icon_100_url, :updated_at] },
-      teachers: { only: [:id, :first_name, :last_name, :email, :icon_100_url, :updated_at] },
-      students: { only: [:id, :first_name, :last_name, :email] },
-      roster_meetings: { only: [:id, :taught_on, :starts_at, :ends_at, :location] }
+      teacher: { only: [ :id, :first_name, :last_name, :email, :icon_100_url, :updated_at ] },
+      teachers: { only: [ :id, :first_name, :last_name, :email, :icon_100_url, :updated_at ] },
+      students: { only: [ :id, :first_name, :last_name, :email ] },
+      roster_meetings: { only: [ :id, :taught_on, :starts_at, :ends_at, :location ] }
     }
   )
 end
 
 
-  # GET /rosters_by_date?date=YYYY-MM-DD
+# GET /rosters_by_date?date=YYYY-MM-DD
 def by_date
   date = Date.parse(params[:date])
   weekday = date.wday
@@ -43,10 +43,10 @@ def by_date
   .order(:name)
 
   render json: rosters.map { |r|
-    r.as_json(only: [:id, :name]).merge(
-      students: r.students.as_json(only: [:id]),
+    r.as_json(only: [ :id, :name ]).merge(
+      students: r.students.as_json(only: [ :id ]),
       roster_schedules: r.roster_schedules.map { |s|
-        s.as_json(only: [:id, :weekday, :location]).merge(
+        s.as_json(only: [ :id, :weekday, :location ]).merge(
           starts_at: s.starts_at&.strftime("%H:%M"),
           ends_at:   s.ends_at&.strftime("%H:%M")
         )
@@ -61,7 +61,7 @@ end
     roster = current_user.rosters.new(roster_params)
 
     if roster.save
-      render json: roster.as_json(only: [:id, :name]), status: :created
+      render json: roster.as_json(only: [ :id, :name ]), status: :created
     else
       render json: { errors: roster.errors.full_messages }, status: :unprocessable_entity
     end
@@ -70,7 +70,7 @@ end
   # PATCH/PUT /rosters/:id
   def update
     if @roster.update(roster_params)
-      render json: @roster.as_json(only: [:id, :name]), status: :ok
+      render json: @roster.as_json(only: [ :id, :name ]), status: :ok
     else
       render json: { errors: @roster.errors.full_messages }, status: :unprocessable_entity
     end
@@ -86,7 +86,7 @@ end
   def add_student
   roster = Roster.find(params[:roster_id] || params[:id])
 
-  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+  teacher_ids = ([ roster.teacher_id ] + roster.teachers.pluck(:id)).uniq
 
   allowed = current_user&.admin? || teacher_ids.include?(current_user.id)
   return render(json: { error: "Not authorized" }, status: :unauthorized) unless allowed
@@ -97,8 +97,8 @@ end
   roster.students << student unless roster.students.exists?(student.id)
 
   render json: roster.as_json(
-    only: [:id, :name],
-    include: { students: { only: [:id, :first_name, :last_name, :email] } }
+    only: [ :id, :name ],
+    include: { students: { only: [ :id, :first_name, :last_name, :email ] } }
   )
 end
 
@@ -106,7 +106,7 @@ end
   # DELETE /rosters/:roster_id/remove_student/:student_id
   def remove_student
   roster = @roster
-  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+  teacher_ids = ([ roster.teacher_id ] + roster.teachers.pluck(:id)).uniq
 
   allowed = current_user&.admin? || teacher_ids.include?(current_user.id)
   return render(json: { error: "Not authorized" }, status: :unauthorized) unless allowed
@@ -115,20 +115,20 @@ end
   roster.students.destroy(student)
 
   render json: roster.reload.as_json(
-    only: [:id, :name],
-    include: { students: { only: [:id, :first_name, :last_name, :email] } }
+    only: [ :id, :name ],
+    include: { students: { only: [ :id, :first_name, :last_name, :email ] } }
   )
 end
 
 
-  # GET /rosters/:id/scheduled_lessons
-  # app/controllers/rosters_controller.rb (or wherever scheduled_lessons lives)
+# GET /rosters/:id/scheduled_lessons
+# app/controllers/rosters_controller.rb (or wherever scheduled_lessons lives)
 def scheduled_lessons
   roster = @roster
 
   meetings = roster.roster_meetings.order(:taught_on, :starts_at)
 
-  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+  teacher_ids = ([ roster.teacher_id ] + roster.teachers.pluck(:id)).uniq
 
   matches = meetings.map do |m|
     m_start = combine_date_and_time(m.taught_on, m.starts_at)
@@ -174,7 +174,7 @@ end
   def upcoming_scheduled_lessons
     weeks = params[:weeks].to_i
     weeks = 4 if weeks <= 0
-    weeks = [[weeks, 2].max, 8].min
+    weeks = [ [ weeks, 2 ].max, 8 ].min
 
     schedules = @roster.roster_schedules
 
@@ -184,10 +184,10 @@ end
     instances = build_instances(schedules, from_date, to_date)
     dates = instances.map { |i| i[:taught_on] }.uniq
 
-    teacher_ids = ([@roster.teacher_id] + @roster.teachers.pluck(:id)).uniq
+    teacher_ids = ([ @roster.teacher_id ] + @roster.teachers.pluck(:id)).uniq
 
 occs = LessonPlanOccurrence
-  .includes(lesson_plan: [:skills])
+  .includes(lesson_plan: [ :skills ])
   .joins(:lesson_plan)
   .where(taught_on: dates)
   .where(lesson_plans: { teacher_id: teacher_ids })  # ✅ was current_user.id
@@ -204,11 +204,11 @@ occs = LessonPlanOccurrence
       {
         instance: inst,
         occurrences: overlapping.as_json(
-          only: [:id, :taught_on, :starts_at, :ends_at, :location],
+          only: [ :id, :taught_on, :starts_at, :ends_at, :location ],
           include: {
             lesson_plan: {
-              only: [:id, :title, :description, :teacher_id],
-              include: { skills: { only: [:id, :name, :level] } }
+              only: [ :id, :title, :description, :teacher_id ],
+              include: { skills: { only: [ :id, :name, :level ] } }
             }
           }
         )
@@ -226,7 +226,7 @@ occs = LessonPlanOccurrence
   week_end   = week_start + 6.days
   weekly_blocks = roster.roster_schedules.to_a
 
-  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+  teacher_ids = ([ roster.teacher_id ] + roster.teachers.pluck(:id)).uniq
 
 occs = LessonPlanOccurrence
   .includes(lesson_plan: :skills)
@@ -239,12 +239,12 @@ occs = LessonPlanOccurrence
   matches = occs.select { |occ| overlaps_any_weekly_block?(occ, weekly_blocks) }
 
   render json: matches.map { |occ|
-    occ.as_json(only: [:id, :taught_on, :location]).merge(
+    occ.as_json(only: [ :id, :taught_on, :location ]).merge(
       starts_at: occ.starts_at&.strftime("%H:%M"),
       ends_at:   occ.ends_at&.strftime("%H:%M"),
       lesson_plan: occ.lesson_plan.as_json(
-        only: [:id, :title, :description],
-        include: { skills: { only: [:id, :name, :level] } }
+        only: [ :id, :title, :description ],
+        include: { skills: { only: [ :id, :name, :level ] } }
       )
     )
   }
@@ -265,7 +265,7 @@ def lesson_plans_matching_schedule
   scope = params[:scope].to_s
   only_future = (scope != "all")
 
-  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+  teacher_ids = ([ roster.teacher_id ] + roster.teachers.pluck(:id)).uniq
 
   occs = LessonPlanOccurrence
     .includes(lesson_plan: :skills)
@@ -302,11 +302,11 @@ def lesson_plans_matching_schedule
   end
 
   render json: matches.as_json(
-    only: [:id, :taught_on, :starts_at, :ends_at, :location],
+    only: [ :id, :taught_on, :starts_at, :ends_at, :location ],
     include: {
       lesson_plan: {
-        only: [:id, :title, :description, :teacher_id],
-        include: { skills: { only: [:id, :name, :level] } }
+        only: [ :id, :title, :description, :teacher_id ],
+        include: { skills: { only: [ :id, :name, :level ] } }
       }
     }
   )
@@ -316,7 +316,7 @@ end
 def available_students
   roster = Roster.accessible_by(current_user).find(params[:id])
 
-  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+  teacher_ids = ([ roster.teacher_id ] + roster.teachers.pluck(:id)).uniq
 
   students =
     Student
@@ -324,13 +324,13 @@ def available_students
       .where.not(id: roster.students.select(:id))
       .order(:last_name, :first_name)
 
-  render json: students.as_json(only: [:id, :first_name, :last_name, :email])
+  render json: students.as_json(only: [ :id, :first_name, :last_name, :email ])
 end
 
 
 def add_teacher
   teacher = User.find(params[:teacher_id])
-  return render json: { errors: ["User is not a teacher"] }, status: :unprocessable_entity unless teacher.teacher?
+  return render json: { errors: [ "User is not a teacher" ] }, status: :unprocessable_entity unless teacher.teacher?
 
   # Optional rule: only the roster owner can add/remove teachers
   # return render json: { errors: ["Not authorized"] }, status: :unauthorized unless @roster.teacher_id == current_user.id
@@ -338,10 +338,10 @@ def add_teacher
   RosterTeacher.find_or_create_by!(roster: @roster, teacher: teacher)
 
   render json: @roster.reload.as_json(
-    only: [:id, :name],
+    only: [ :id, :name ],
     include: {
-      teacher: { only: [:id, :first_name, :last_name, :email, :icon_100_url, :updated_at] },
-      teachers: { only: [:id, :first_name, :last_name, :email, :icon_100_url, :updated_at] }
+      teacher: { only: [ :id, :first_name, :last_name, :email, :icon_100_url, :updated_at ] },
+      teachers: { only: [ :id, :first_name, :last_name, :email, :icon_100_url, :updated_at ] }
     }
   )
 end
@@ -350,24 +350,24 @@ def remove_teacher
   roster = Roster.find(params[:id])
 
   # Build the effective teacher set: owner + additional teachers
-  teacher_ids = ([roster.teacher_id] + roster.teachers.pluck(:id)).uniq
+  teacher_ids = ([ roster.teacher_id ] + roster.teachers.pluck(:id)).uniq
 
   if teacher_ids.length <= 1
-    return render json: { errors: ["A roster must have at least one teacher."] }, status: :unprocessable_entity
+    return render json: { errors: [ "A roster must have at least one teacher." ] }, status: :unprocessable_entity
   end
 
   if roster.teacher_id.to_i == params[:teacher_id].to_i
-    return render json: { errors: ["Can't remove roster owner"] }, status: :unprocessable_entity
+    return render json: { errors: [ "Can't remove roster owner" ] }, status: :unprocessable_entity
   end
 
   RosterTeacher.where(roster_id: roster.id, teacher_id: params[:teacher_id]).destroy_all
 
   roster.reload
   render json: roster.as_json(
-  only: [:id, :name],
+  only: [ :id, :name ],
   include: {
-    teacher: { only: [:id, :first_name, :last_name, :email, :icon_100_url, :updated_at] },
-    teachers: { only: [:id, :first_name, :last_name, :email, :icon_100_url, :updated_at] }
+    teacher: { only: [ :id, :first_name, :last_name, :email, :icon_100_url, :updated_at ] },
+    teachers: { only: [ :id, :first_name, :last_name, :email, :icon_100_url, :updated_at ] }
   }
 )
 end
@@ -431,12 +431,12 @@ def hms(value)
     hh = parts[0]
     mm = parts[1] || 0
     ss = parts[2] || 0
-    return [hh, mm, ss] if hh
+    return [ hh, mm, ss ] if hh
   end
 
   # Time / DateTime / ActiveSupport::TimeWithZone
   t = value.respond_to?(:in_time_zone) ? value.in_time_zone : value
-  [t.hour, t.min, t.sec]
+  [ t.hour, t.min, t.sec ]
 end
 
 def dt_on(date, time_value)
@@ -488,7 +488,7 @@ end
 
   def require_teacher
   return if current_user&.teacher? || current_user&.admin?
-  render json: { errors: ["Instructor accounts only."] }, status: :unauthorized
+  render json: { errors: [ "Instructor accounts only." ] }, status: :unauthorized
 end
 
 
@@ -508,13 +508,10 @@ end
       end
     end
 
-    instances.sort_by { |i| [i[:taught_on], i[:starts_at]] }
+    instances.sort_by { |i| [ i[:taught_on], i[:starts_at] ] }
   end
 
   def combine_date_time(date, time_value)
   dt_on(date, time_value)
 end
-
-
-
 end

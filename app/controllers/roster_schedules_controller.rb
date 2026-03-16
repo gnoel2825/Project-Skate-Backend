@@ -42,7 +42,6 @@ class RosterSchedulesController < ApplicationController
 
   def set_roster
     @roster = Roster.accessible_by(current_user).find(params[:roster_id])
-
   end
 
   # Accepts "HH:MM" from React <input type="time" />
@@ -53,7 +52,7 @@ class RosterSchedulesController < ApplicationController
 
   # ALWAYS return time-only strings, never a "2000-01-01T...Z"
   def schedule_json(s)
-    s.as_json(only: [:id, :weekday, :location]).merge(
+    s.as_json(only: [ :id, :weekday, :location ]).merge(
       starts_at: s.starts_at&.strftime("%H:%M"),
       ends_at:   s.ends_at&.strftime("%H:%M")
     )
@@ -61,6 +60,6 @@ class RosterSchedulesController < ApplicationController
 
   def require_teacher
     return if current_user&.teacher?
-    render json: { errors: ["Teachers only"] }, status: :unauthorized
+    render json: { errors: [ "Teachers only" ] }, status: :unauthorized
   end
 end

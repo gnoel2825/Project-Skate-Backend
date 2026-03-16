@@ -1,6 +1,6 @@
 class RosterMeetingsController < ApplicationController
   before_action :require_teacher
-  before_action :no_store, only: [:by_date]
+  before_action :no_store, only: [ :by_date ]
 
   def create
     roster = current_user.rosters.find(params[:roster_id])
@@ -42,12 +42,12 @@ class RosterMeetingsController < ApplicationController
     .order(:starts_at)
 
   render json: meetings.as_json(
-    only: [:id, :taught_on, :starts_at, :ends_at, :location, :notes],
+    only: [ :id, :taught_on, :starts_at, :ends_at, :location, :notes ],
     include: {
       roster: {
-        only: [:id, :name],
+        only: [ :id, :name ],
         include: {
-          students: { only: [:id, :first_name, :last_name] }
+          students: { only: [ :id, :first_name, :last_name ] }
         }
       }
     }
@@ -71,6 +71,6 @@ end
 
   def require_teacher
     return if current_user&.teacher? || current_user&.admin?
-    render json: { errors: ["This component is restricted to instructor accounts only. If you are an instructor or administrator, an admin account must manually assign that role to you in the admin panel for you to access this component."] }, status: :unauthorized
+    render json: { errors: [ "This component is restricted to instructor accounts only. If you are an instructor or administrator, an admin account must manually assign that role to you in the admin panel for you to access this component." ] }, status: :unauthorized
   end
 end

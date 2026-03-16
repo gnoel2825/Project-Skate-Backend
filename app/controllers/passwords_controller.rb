@@ -3,10 +3,10 @@ class PasswordsController < ApplicationController
 
   def update
     user = current_user
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless user
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless user
 
     unless user.authenticate(password_params[:current_password].to_s)
-      return render json: { errors: ["Current password is incorrect"] }, status: :unauthorized
+      return render json: { errors: [ "Current password is incorrect" ] }, status: :unauthorized
     end
 
     if user.update(password: password_params[:password], password_confirmation: password_params[:password_confirmation])

@@ -1,6 +1,6 @@
 class LessonPlanOccurrencesController < ApplicationController
   before_action :require_teacher
-  before_action :no_store, only: [:by_date]
+  before_action :no_store, only: [ :by_date ]
 
   # GET /lesson_plans_by_date?date=YYYY-MM-DD
   def by_date
@@ -16,7 +16,7 @@ class LessonPlanOccurrencesController < ApplicationController
     weekly_blocks = rosters.flat_map(&:roster_schedules).select { |b| b.weekday == date.wday }
     meetings      = rosters.flat_map(&:roster_meetings).select { |m| m.taught_on == date }
 
-    teacher_ids = rosters.flat_map { |r| [r.teacher_id] + r.teachers.map(&:id) }.uniq
+    teacher_ids = rosters.flat_map { |r| [ r.teacher_id ] + r.teachers.map(&:id) }.uniq
     teacher_ids << current_user.id
     teacher_ids.uniq!
 
@@ -24,7 +24,7 @@ class LessonPlanOccurrencesController < ApplicationController
       .includes(
         :attendances,
         :roster,
-        lesson_plan: [:skills, :warmup_skills, :cooldown_skills]
+        lesson_plan: [ :skills, :warmup_skills, :cooldown_skills ]
       )
       .joins(:lesson_plan)
       .where(taught_on: date)
@@ -41,7 +41,7 @@ class LessonPlanOccurrencesController < ApplicationController
     render json: visible.map { |occ|
       matching_rosters =
         if occ.roster.present?
-          [occ.roster]
+          [ occ.roster ]
         else
           rosters.select { |roster| roster_match_for_occurrence?(occ, roster) }
         end
@@ -60,7 +60,7 @@ class LessonPlanOccurrencesController < ApplicationController
             name: r.name,
             student_count: r.students.size,
             students: r.students
-              .sort_by { |s| [s.last_name.to_s.downcase, s.first_name.to_s.downcase] }
+              .sort_by { |s| [ s.last_name.to_s.downcase, s.first_name.to_s.downcase ] }
               .map do |student|
                 attendance_row = occ.attendances.find { |a| a.student_id == student.id }
 
@@ -68,7 +68,7 @@ class LessonPlanOccurrencesController < ApplicationController
                   id: student.id,
                   first_name: student.first_name,
                   last_name: student.last_name,
-                  full_name: [student.first_name, student.last_name].compact.join(" "),
+                  full_name: [ student.first_name, student.last_name ].compact.join(" "),
                   attendance: attendance_row ? {
                     id: attendance_row.id,
                     status: attendance_row.status,
@@ -95,9 +95,9 @@ class LessonPlanOccurrencesController < ApplicationController
           warmup_notes: occ.lesson_plan.warmup_notes,
           main_notes: occ.lesson_plan.main_notes,
           cooldown_notes: occ.lesson_plan.cooldown_notes,
-          skills: occ.lesson_plan.skills.as_json(only: [:id, :name, :level]),
-          warmup_skills: occ.lesson_plan.warmup_skills.as_json(only: [:id, :name, :level]),
-          cooldown_skills: occ.lesson_plan.cooldown_skills.as_json(only: [:id, :name, :level])
+          skills: occ.lesson_plan.skills.as_json(only: [ :id, :name, :level ]),
+          warmup_skills: occ.lesson_plan.warmup_skills.as_json(only: [ :id, :name, :level ]),
+          cooldown_skills: occ.lesson_plan.cooldown_skills.as_json(only: [ :id, :name, :level ])
         }
       }
     }
@@ -106,14 +106,14 @@ class LessonPlanOccurrencesController < ApplicationController
   # POST /lesson_plans/:lesson_plan_id/lesson_plan_occurrences
   def create
     lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
 
     occ = lesson_plan.lesson_plan_occurrences.new(occurrence_params)
     occ.starts_at = normalize_time_param(occ.starts_at)
     occ.ends_at   = normalize_time_param(occ.ends_at)
 
     if occ.save
-      render json: occ.as_json(only: [:id, :taught_on, :location, :roster_id]).merge(
+      render json: occ.as_json(only: [ :id, :taught_on, :location, :roster_id ]).merge(
         starts_at: occ.starts_at&.strftime("%H:%M"),
         ends_at: occ.ends_at&.strftime("%H:%M")
       ), status: :created
@@ -125,7 +125,7 @@ class LessonPlanOccurrencesController < ApplicationController
   # PATCH /lesson_plans/:lesson_plan_id/lesson_plan_occurrences/:id
   def update
     lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
 
     occ = lesson_plan.lesson_plan_occurrences.find(params[:id])
 
@@ -134,7 +134,7 @@ class LessonPlanOccurrencesController < ApplicationController
     attrs[:ends_at]   = normalize_time_param(attrs[:ends_at])
 
     if occ.update(attrs)
-      render json: occ.as_json(only: [:id, :taught_on, :location, :roster_id]).merge(
+      render json: occ.as_json(only: [ :id, :taught_on, :location, :roster_id ]).merge(
         starts_at: occ.starts_at&.strftime("%H:%M"),
         ends_at: occ.ends_at&.strftime("%H:%M")
       ), status: :ok
@@ -146,7 +146,7 @@ class LessonPlanOccurrencesController < ApplicationController
   # DELETE /lesson_plans/:lesson_plan_id/lesson_plan_occurrences/:id
   def destroy
     lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
 
     occ = lesson_plan.lesson_plan_occurrences.find(params[:id])
     occ.destroy
@@ -158,7 +158,7 @@ class LessonPlanOccurrencesController < ApplicationController
     lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
     occ = lesson_plan.lesson_plan_occurrences.includes(:attendances, roster: :students).find(params[:id])
 
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless can_access_occurrence?(lesson_plan, occ)
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless can_access_occurrence?(lesson_plan, occ)
 
     roster = occ.roster
     students = roster ? roster.students.order(:last_name, :first_name) : []
@@ -198,7 +198,7 @@ class LessonPlanOccurrencesController < ApplicationController
     lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
     occ = lesson_plan.lesson_plan_occurrences.find(params[:id])
 
-    return render json: { errors: ["Not authorized"] }, status: :unauthorized unless can_access_occurrence?(lesson_plan, occ)
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized unless can_access_occurrence?(lesson_plan, occ)
 
     rows = params[:attendance] || []
 

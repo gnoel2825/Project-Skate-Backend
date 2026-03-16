@@ -40,19 +40,19 @@ def from_rosters
         .distinct
         .order(:last_name, :first_name)
 
-    render json: students.as_json(only: [:id, :first_name, :last_name, :email, :birthday])
+    render json: students.as_json(only: [ :id, :first_name, :last_name, :email, :birthday ])
   end
 
   def all
     students = Student.order(:last_name, :first_name)
-    render json: students.as_json(only: [:id, :first_name, :last_name, :email, :birthday])
+    render json: students.as_json(only: [ :id, :first_name, :last_name, :email, :birthday ])
   end
 
 
   def show
   student =
     current_user.students
-      .includes(rosters: [:teachers, :roster_schedules, :roster_meetings])
+      .includes(rosters: [ :teachers, :roster_schedules, :roster_meetings ])
       .find(params[:id])
 
   render_student(student)
@@ -90,21 +90,21 @@ end
 
   def render_student(student, status: :ok)
   render json: student.as_json(
-    only: [:id, :first_name, :last_name, :email, :birthday, :notes],
+    only: [ :id, :first_name, :last_name, :email, :birthday, :notes ],
     include: {
       rosters: {
-        only: [:id, :name],
+        only: [ :id, :name ],
         include: {
-          teachers: { only: [:id, :first_name, :last_name, :email] },
+          teachers: { only: [ :id, :first_name, :last_name, :email ] },
 
           # If you store recurring weekly times here:
           roster_schedules: {
-            only: [:id, :day_of_week, :starts_at, :ends_at, :location]
+            only: [ :id, :day_of_week, :starts_at, :ends_at, :location ]
           },
 
           # If you store specific dated meetings here:
           roster_meetings: {
-            only: [:id, :meeting_date, :starts_at, :ends_at, :location]
+            only: [ :id, :meeting_date, :starts_at, :ends_at, :location ]
           }
         }
       }
@@ -119,7 +119,7 @@ end
 
   def require_teacher
     unless current_user&.teacher?
-      render json: { errors: ["This component is restricted to instructor accounts only. If you are an instructor or administrator, an admin account must manually assign that role to you in the admin panel for you to access this component."] }, status: :unauthorized
+      render json: { errors: [ "This component is restricted to instructor accounts only. If you are an instructor or administrator, an admin account must manually assign that role to you in the admin panel for you to access this component." ] }, status: :unauthorized
     end
   end
 end

@@ -1,5 +1,5 @@
 class RegistrationsController < ApplicationController
-  skip_before_action :require_login, only: [:create]
+  skip_before_action :require_login, only: [ :create ]
 
   def create
     user = User.new(user_params)
@@ -7,7 +7,7 @@ class RegistrationsController < ApplicationController
     if user.save
       user.reset_auth_token! if user.auth_token.blank?
 
-      safe_user = user.as_json(only: [:id, :email, :first_name, :last_name, :role])
+      safe_user = user.as_json(only: [ :id, :email, :first_name, :last_name, :role ])
 
       render json: {
         user: safe_user,
