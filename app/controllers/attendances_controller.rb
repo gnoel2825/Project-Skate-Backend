@@ -1,68 +1,57 @@
-Rails.application.routes.draw do
-  post   "/registrations", to: "registrations#create"
-  post   "/sessions",      to: "sessions#create"
-  delete "/logout",        to: "sessions#destroy"
-  get    "/logged_in",     to: "sessions#logged_in"
-  patch  "/password",      to: "passwords#update"
-  patch  "/profile",       to: "users#update"
+class AttendancesController < ApplicationController
+  before_action :require_teacher
+  before_action :set_attendance, only: [ :update, :destroy ]
 
-  resources :lesson_plans, only: [ :create, :show, :index, :update, :destroy ] do
-    member do
-      post :add_skills
-      delete "remove_skill/:skill_id", to: "lesson_plans#remove_skill"
-      post :duplicate
-    end
+  # POST /attendances
+  def create
+    attendance = Attendance.new(attendance_params)
 
-    resources :lesson_plan_occurrences, only: [ :create, :update, :destroy ]
-  end
-
-  resources :lesson_plan_occurrences, only: [] do
-    resources :attendances, only: [ :index, :create, :update ]
-  end
-
-  get "/lesson_plans_by_date", to: "lesson_plan_occurrences#by_date"
-
-  resources :skills, only: [ :index, :show, :create, :update, :destroy ]
-
-  resources :users, only: [ :index, :show, :create, :update ]
-  delete "/account", to: "users#destroy"
-
-  namespace :admin do
-    resources :users, only: [ :index, :create, :update, :destroy ]
-  end
-
-  resources :students, only: [ :index, :show, :create, :update, :destroy ] do
-    collection do
-      get :owned
-      get :all
+    if attendance.save
+      render json: attendance.as_json(
+        only: [ :id, :lesson_plan_occurrence_id, :student_id, :status, :notes ]
+      ), status: :created
+    else
+      render json: { errors: attendance.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  get "/students_from_rosters", to: "students#from_rosters"
-  get "/my_students", to: "students#my_students"
-
-  resources :rosters do
-    post   "add_student/:student_id",    to: "rosters#add_student"
-    delete "remove_student/:student_id", to: "rosters#remove_student"
-
-    member do
-      get :available_students
-      delete "remove_teacher/:teacher_id", to: "rosters#remove_teacher"
-      post   "add_teacher/:teacher_id",    to: "rosters#add_teacher"
+  # PATCH/PUT /attendances/:id
+  def update
+    if @attendance.update(attendance_params)
+      render json: @attendance.as_json(
+        only: [ :id, :lesson_plan_occurrence_id, :student_id, :status, :notes ]
+      ), status: :ok
+    else
+      render json: { errors: @attendance.errors.full_messages }, status: :unprocessable_entity
     end
-
-    resources :roster_meetings, only: [ :create, :update, :destroy ]
-    resources :roster_schedules, only: [ :index, :create, :update, :destroy ]
-
-    get :scheduled_lessons, on: :member
-    get :upcoming_scheduled_lessons, on: :member
-    get :lesson_plans_in_week, on: :member
-    get :lesson_plans_matching_schedule, on: :member
   end
 
-  get "/rosters_by_date", to: "rosters#by_date"
-  get "/roster_meetings_by_date", to: "roster_meetings#by_date"
+  # DELETE /attendances/:id
+  def destroy
+    @attendance.destroy
+    head :no_content
+  end
 
-  get "up" => "rails/health#show", as: :rails_health_check
-  get "/version", to: proc { [ 200, { "Content-Type" => "application/json" }, [ { sha: ENV["RENDER_GIT_COMMIT"] || "unknown" }.to_json ] ] }
+  private
+
+  def set_attendance
+    @attendance = Attendance.find(params[:id])
+  end
+
+  def attendance_params
+    params.require(:attendance).permit(
+      :lesson_plan_occurrence_id,
+      :student_id,
+      :status,
+      :notes
+    )
+  end
+
+  def require_teacher
+    unless current_user&.teacher? || current_user&.admin?
+      render json: {
+        errors: [ "Not authorized" ]
+      }, status: :unauthorized
+    end
+  end
 end
