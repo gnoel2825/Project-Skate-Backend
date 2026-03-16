@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_05_212018) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_022725) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -39,16 +39,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_212018) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "attendances", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "lesson_plan_occurrence_id", null: false
+    t.text "note"
+    t.string "status", default: "present", null: false
+    t.integer "student_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lesson_plan_occurrence_id", "student_id"], name: "index_attendances_on_lesson_plan_occurrence_id_and_student_id", unique: true
+    t.index ["lesson_plan_occurrence_id"], name: "index_attendances_on_lesson_plan_occurrence_id"
+    t.index ["student_id"], name: "index_attendances_on_student_id"
+  end
+
   create_table "lesson_plan_occurrences", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.time "ends_at"
     t.integer "lesson_plan_id", null: false
     t.string "location"
+    t.integer "roster_id"
     t.time "starts_at"
     t.date "taught_on", null: false
     t.datetime "updated_at", null: false
     t.index ["lesson_plan_id", "taught_on"], name: "index_lesson_plan_occurrences_on_lesson_plan_id_and_taught_on"
     t.index ["lesson_plan_id"], name: "index_lesson_plan_occurrences_on_lesson_plan_id"
+    t.index ["roster_id"], name: "index_lesson_plan_occurrences_on_roster_id"
     t.index ["taught_on"], name: "index_lesson_plan_occurrences_on_taught_on"
   end
 
@@ -164,7 +178,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_212018) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "attendances", "lesson_plan_occurrences"
+  add_foreign_key "attendances", "students"
   add_foreign_key "lesson_plan_occurrences", "lesson_plans"
+  add_foreign_key "lesson_plan_occurrences", "rosters"
   add_foreign_key "lesson_plan_skills", "lesson_plans"
   add_foreign_key "lesson_plan_skills", "skills"
   add_foreign_key "lesson_plans", "users", column: "teacher_id"

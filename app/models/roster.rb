@@ -18,4 +18,9 @@ class Roster < ApplicationRecord
   has_many :roster_meetings, dependent: :destroy
   has_many :roster_schedules, dependent: :destroy
 
+  has_many :roster_teachers, dependent: :destroy
+  has_many :teachers, through: :roster_teachers, source: :teacher
+
+  has_many :lesson_plan_occurrences
+
 end

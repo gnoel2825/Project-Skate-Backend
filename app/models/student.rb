@@ -9,5 +9,8 @@ class Student < ApplicationRecord
   # Requires: Roster belongs_to :teacher (class_name: "User")
   has_many :roster_teachers, -> { distinct }, through: :rosters, source: :teacher
 
+  has_many :attendances, dependent: :destroy
+  has_many :lesson_plan_occurrences, through: :attendances
+
   validates :first_name, :last_name, presence: true
 end

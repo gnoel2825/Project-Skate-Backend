@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  lesson_plan_occurrence: one
+  student: one
+  status: MyString
+  note: MyText
+
+two:
+  lesson_plan_occurrence: two
+  student: two
+  status: MyString
+  note: MyText

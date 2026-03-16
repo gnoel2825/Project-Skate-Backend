@@ -18,6 +18,15 @@ end
 
 puts "Seeded #{User.count} users."
 
+test_email = "test@example.com"
+
+u = User.find_or_initialize_by(email: test_email)
+
+u.role = "admin"           if u.respond_to?(:role=)
+u.save!
+
+puts "Seeded admin user: #{u.email} (id=#{u.id}, role=#{u.role})"
+
 
 skills = [
   # ===== BASIC 1 =====
