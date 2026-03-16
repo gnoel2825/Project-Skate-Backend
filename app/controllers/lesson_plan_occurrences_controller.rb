@@ -220,12 +220,13 @@ class LessonPlanOccurrencesController < ApplicationController
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
-  private
+   private
 
   def accessible_lesson_plans
-  return LessonPlan.all if current_user&.admin?
-  LessonPlan.where(teacher_id: current_user.id)
-end
+    return LessonPlan.all if current_user&.admin?
+
+    LessonPlan.where(teacher_id: current_user.id)
+  end
 
   def member_rosters_relation
     owned_ids  = Roster.where(teacher_id: current_user.id).select(:id)
@@ -241,7 +242,7 @@ end
     return true if owns_lesson_plan?(lesson_plan)
     return false if occ.roster.blank?
 
-    roster_teacher_ids = [occ.roster.teacher_id] + occ.roster.teachers.pluck(:id)
+    roster_teacher_ids = [ occ.roster.teacher_id ] + occ.roster.teachers.pluck(:id)
     roster_teacher_ids.uniq.include?(current_user.id)
   end
 
@@ -271,11 +272,13 @@ end
 
   def combine_date_and_time(date, time)
     return nil if date.blank? || time.blank?
+
     Time.zone.local(date.year, date.month, date.day, time.hour, time.min, time.sec)
   end
 
   def overlaps?(a_start, a_end, b_start, b_end)
     return false if a_start.blank? || a_end.blank? || b_start.blank? || b_end.blank?
+
     a_start < b_end && b_start < a_end
   end
 
@@ -283,6 +286,7 @@ end
     weekly_match = roster.roster_schedules.any? do |blk|
       next false unless blk.weekday == occ.taught_on.wday
       next false if blk.starts_at.blank? || blk.ends_at.blank?
+
       overlaps?(
         combine_date_and_time(occ.taught_on, blk.starts_at),
         combine_date_and_time(occ.taught_on, blk.ends_at),
@@ -294,6 +298,7 @@ end
     meeting_match = roster.roster_meetings.any? do |m|
       next false unless m.taught_on == occ.taught_on
       next false if m.starts_at.blank? || m.ends_at.blank?
+
       overlaps?(
         combine_date_and_time(m.taught_on, m.starts_at),
         combine_date_and_time(m.taught_on, m.ends_at),
@@ -330,7 +335,7 @@ end
   end
 
   def require_teacher
-    unless current_user&.teacher?
+    unless current_user&.teacher? || current_user&.admin?
       render json: {
         errors: [
           "This component is restricted to instructor accounts only. If you are an instructor or administrator, an admin account must manually assign that role to you in the admin panel for you to access this component."
