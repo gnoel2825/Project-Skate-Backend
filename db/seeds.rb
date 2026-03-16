@@ -27,7 +27,8 @@ end
 puts "✅ Seeded #{User.count} users"
 
 admin_user = User.find_by!(email: "test@example.com")
-teacher = User.find_by!(email: "coach@example.com")
+teacher = User.find_by!(email: "test@example.com")
+teacher.update!(role: "admin") if teacher.role != "admin"
 
 # =========================
 # Skills
