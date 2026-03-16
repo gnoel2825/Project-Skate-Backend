@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
 
   def require_admin
     return if current_user&.admin?
-    render json: { errors: ["Admins only"] }, status: :unauthorized
+    render json: { errors: [ "Admins only" ] }, status: :unauthorized
   end
 
   def current_user
