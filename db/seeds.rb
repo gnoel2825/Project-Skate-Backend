@@ -128,13 +128,12 @@ LAST_NAMES = %w[
 end
 
 puts "✅ Seeded #{teacher.students.count} students for #{teacher.email}"
-
 # =========================
 # Lesson Plans + Occurrences
 # =========================
 puts "🌱 Seeding lesson plans + occurrences..."
 
-SKILL_POOL = Skill.all.to_a
+SKILL_POOL = Skill.order(:level, :name).to_a
 raise "No skills found. Seed skills first." if SKILL_POOL.empty?
 
 PLAN_TITLES = [
@@ -195,17 +194,17 @@ end
   lp.description = PLAN_DESCRIPTIONS.sample
   lp.save!
 
-selected_skills = SKILL_POOL.sample(rand(4..10))
+  selected_skills = SKILL_POOL.sample(rand(4..10))
 
-lp.lesson_plan_skills.destroy_all
+  lp.lesson_plan_skills.destroy_all
 
-selected_skills.each_with_index do |skill, idx|
-  lp.lesson_plan_skills.create!(
-    skill: skill,
-    role: "main",
-    position: idx + 1
-  )
-end
+  selected_skills.each_with_index do |skill, idx|
+    lp.lesson_plan_skills.create!(
+      skill: skill,
+      role: "main",
+      position: idx + 1
+    )
+  end
 
   next if lp.lesson_plan_occurrences.exists?
 
@@ -226,45 +225,32 @@ puts "✅ Seeded #{LessonPlan.count} lesson plans"
 puts "✅ Seeded #{LessonPlanOccurrence.count} lesson plan occurrences"
 
 # =========================
-# Rosters
+# Rosters + Schedules
 # =========================
+puts "🌱 Seeding rosters + schedules..."
+
 students = teacher.students.limit(40).to_a
 
-[
-  "Sat AM Group",
-  "Basic 2",
-  "Private Students",
-  "Power + Edges"
-].each do |name|
-  roster = Roster.find_or_initialize_by(teacher: teacher, name: name)
+roster_configs = [
+  { name: "Sat AM Group", weekday: 6, starts_at: "09:00", ends_at: "10:00", location: "Main Rink" },
+  { name: "Basic 2", weekday: 2, starts_at: "16:00", ends_at: "17:00", location: "Practice Rink" },
+  { name: "Private Students", weekday: 4, starts_at: "17:00", ends_at: "18:00", location: "Studio Ice" },
+  { name: "Power + Edges", weekday: 0, starts_at: "11:00", ends_at: "12:00", location: "North Arena" }
+]
+
+roster_configs.each do |config|
+  roster = Roster.find_or_initialize_by(teacher: teacher, name: config[:name])
   roster.save!
 
   roster.students = students.sample(rand(6..14))
+
+  schedule = roster.roster_schedules.first_or_initialize
+  schedule.weekday = config[:weekday]
+  schedule.starts_at = config[:starts_at]
+  schedule.ends_at = config[:ends_at]
+  schedule.location = config[:location]
+  schedule.save!
 end
 
 puts "✅ Seeded #{Roster.count} rosters with students"
-
-# =========================
-# Extra teachers
-# =========================
-teachers = [
-  { first_name: "Ava", last_name: "Nguyen", email: "ava.nguyen@example.com", password: "password" },
-  { first_name: "Maya", last_name: "Patel", email: "maya.patel@example.com", password: "password" },
-  { first_name: "Jordan", last_name: "Kim", email: "jordan.kim@example.com", password: "password" },
-  { first_name: "Elena", last_name: "Garcia", email: "elena.garcia@example.com", password: "password" }
-]
-
-teachers.each do |t|
-  user = User.find_or_initialize_by(email: t[:email])
-  user.assign_attributes(
-    first_name: t[:first_name],
-    last_name: t[:last_name],
-    password: t[:password],
-    password_confirmation: t[:password],
-    role: "teacher"
-  )
-  user.save!
-end
-
-puts "✅ Seeded #{teachers.length} additional teachers"
-puts "🌱 Seeding complete!"
+puts "✅ Seeded #{RosterSchedule.count} roster schedules"
