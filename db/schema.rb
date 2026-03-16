@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_022725) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_195632) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -42,7 +42,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_022725) do
   create_table "attendances", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "lesson_plan_occurrence_id", null: false
-    t.text "note"
+    t.text "notes"
     t.string "status", default: "present", null: false
     t.integer "student_id", null: false
     t.datetime "updated_at", null: false
