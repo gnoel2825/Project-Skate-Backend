@@ -270,6 +270,11 @@ end
   )
 end
 
+def accessible_lesson_plans
+  return LessonPlan.all if current_user&.admin?
+  LessonPlan.where(teacher_id: current_user.id)
+end
+
 def sync_ordered_skills!
   ordered = params.require(:lesson_plan).fetch(:ordered_skills_by_role, {})
 
@@ -351,7 +356,7 @@ end
   end
 
   def set_lesson_plan
-    @lesson_plan = LessonPlan.find(params[:id])
+    @lesson_plan = accessible_lesson_plans.find(params[:id])
   end
 
   def owns_lesson_plan?(lesson_plan)

@@ -105,7 +105,7 @@ class LessonPlanOccurrencesController < ApplicationController
 
   # POST /lesson_plans/:lesson_plan_id/lesson_plan_occurrences
   def create
-    lesson_plan = LessonPlan.find(params[:lesson_plan_id])
+    lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
     return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
 
     occ = lesson_plan.lesson_plan_occurrences.new(occurrence_params)
@@ -124,7 +124,7 @@ class LessonPlanOccurrencesController < ApplicationController
 
   # PATCH /lesson_plans/:lesson_plan_id/lesson_plan_occurrences/:id
   def update
-    lesson_plan = LessonPlan.find(params[:lesson_plan_id])
+    lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
     return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
 
     occ = lesson_plan.lesson_plan_occurrences.find(params[:id])
@@ -145,7 +145,7 @@ class LessonPlanOccurrencesController < ApplicationController
 
   # DELETE /lesson_plans/:lesson_plan_id/lesson_plan_occurrences/:id
   def destroy
-    lesson_plan = LessonPlan.find(params[:lesson_plan_id])
+    lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
     return render json: { errors: ["Not authorized"] }, status: :unauthorized unless owns_lesson_plan?(lesson_plan)
 
     occ = lesson_plan.lesson_plan_occurrences.find(params[:id])
@@ -155,7 +155,7 @@ class LessonPlanOccurrencesController < ApplicationController
 
   # GET /lesson_plans/:lesson_plan_id/lesson_plan_occurrences/:id/attendance
   def attendance
-    lesson_plan = LessonPlan.find(params[:lesson_plan_id])
+    lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
     occ = lesson_plan.lesson_plan_occurrences.includes(:attendances, roster: :students).find(params[:id])
 
     return render json: { errors: ["Not authorized"] }, status: :unauthorized unless can_access_occurrence?(lesson_plan, occ)
@@ -195,7 +195,7 @@ class LessonPlanOccurrencesController < ApplicationController
 
   # POST /lesson_plans/:lesson_plan_id/lesson_plan_occurrences/:id/save_attendance
   def save_attendance
-    lesson_plan = LessonPlan.find(params[:lesson_plan_id])
+    lesson_plan = accessible_lesson_plans.find(params[:lesson_plan_id])
     occ = lesson_plan.lesson_plan_occurrences.find(params[:id])
 
     return render json: { errors: ["Not authorized"] }, status: :unauthorized unless can_access_occurrence?(lesson_plan, occ)
@@ -221,6 +221,11 @@ class LessonPlanOccurrencesController < ApplicationController
   end
 
   private
+
+  def accessible_lesson_plans
+  return LessonPlan.all if current_user&.admin?
+  LessonPlan.where(teacher_id: current_user.id)
+end
 
   def member_rosters_relation
     owned_ids  = Roster.where(teacher_id: current_user.id).select(:id)
