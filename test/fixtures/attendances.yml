@@ -4,7 +4,7 @@ one:
   lesson_plan_occurrence: one
   student: one
   status: present
-  note: none
+  notes: none
 
 two:
   lesson_plan_occurrence: two
