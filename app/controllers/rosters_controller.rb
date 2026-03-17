@@ -372,6 +372,73 @@ def remove_teacher
 )
 end
 
+def upcoming_slots
+  roster = Roster.includes(:roster_schedules, :roster_meetings).find(params[:id])
+
+  unless roster.teacher_id == current_user.id || current_user&.admin? ||
+         roster.teachers.where(id: current_user.id).exists?
+    return render json: { errors: [ "Not authorized" ] }, status: :unauthorized
+  end
+
+  days_forward = params[:days].presence&.to_i || 30
+  days_forward = 30 if days_forward <= 0
+  today = Date.current
+  end_date = today + days_forward.days
+
+  slots = []
+
+  roster.roster_schedules.each do |schedule|
+    next if schedule.weekday.nil? || schedule.starts_at.blank? || schedule.ends_at.blank?
+
+    (today..end_date).each do |date|
+      next unless date.wday == schedule.weekday
+
+      slots << {
+        kind: "weekly_schedule",
+        taught_on: date,
+        starts_at: schedule.starts_at.strftime("%H:%M"),
+        ends_at: schedule.ends_at.strftime("%H:%M"),
+        location: schedule.location
+      }
+    end
+  end
+
+  roster.roster_meetings
+    .where(taught_on: today..end_date)
+    .find_each do |meeting|
+      slots << {
+        kind: "meeting",
+        taught_on: meeting.taught_on,
+        starts_at: meeting.starts_at&.strftime("%H:%M"),
+        ends_at: meeting.ends_at&.strftime("%H:%M"),
+        location: meeting.location
+      }
+    end
+
+  slots.sort_by! do |slot|
+    [
+      slot[:taught_on].to_s,
+      slot[:starts_at].to_s
+    ]
+  end
+
+  render json: {
+    roster: {
+      id: roster.id,
+      name: roster.name
+    },
+    slots: slots.map { |slot|
+      {
+        kind: slot[:kind],
+        taught_on: slot[:taught_on],
+        starts_at: slot[:starts_at],
+        ends_at: slot[:ends_at],
+        location: slot[:location]
+      }
+    }
+  }
+end
+
 
 
 private

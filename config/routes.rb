@@ -42,23 +42,23 @@ Rails.application.routes.draw do
   get "/my_students", to: "students#my_students"
 
   resources :rosters do
-    post   "add_student/:student_id",    to: "rosters#add_student"
-    delete "remove_student/:student_id", to: "rosters#remove_student"
+  post   "add_student/:student_id",    to: "rosters#add_student"
+  delete "remove_student/:student_id", to: "rosters#remove_student"
 
-    member do
-      get :available_students
-      delete "remove_teacher/:teacher_id", to: "rosters#remove_teacher"
-      post   "add_teacher/:teacher_id",    to: "rosters#add_teacher"
-    end
-
-    resources :roster_meetings, only: [ :create, :update, :destroy ]
-    resources :roster_schedules, only: [ :index, :create, :update, :destroy ]
-
-    get :scheduled_lessons, on: :member
-    get :upcoming_scheduled_lessons, on: :member
-    get :lesson_plans_in_week, on: :member
-    get :lesson_plans_matching_schedule, on: :member
+  member do
+    get :available_students
+    delete "remove_teacher/:teacher_id", to: "rosters#remove_teacher"
+    post   "add_teacher/:teacher_id",    to: "rosters#add_teacher"
+    get :scheduled_lessons
+    get :upcoming_scheduled_lessons
+    get :lesson_plans_in_week
+    get :lesson_plans_matching_schedule
+    get :upcoming_slots
   end
+
+  resources :roster_meetings, only: [ :create, :update, :destroy ]
+  resources :roster_schedules, only: [ :index, :create, :update, :destroy ]
+end
 
   get "/rosters_by_date", to: "rosters#by_date"
   get "/roster_meetings_by_date", to: "roster_meetings#by_date"

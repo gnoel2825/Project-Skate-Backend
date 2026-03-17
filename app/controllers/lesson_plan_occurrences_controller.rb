@@ -311,8 +311,14 @@ class LessonPlanOccurrencesController < ApplicationController
   end
 
   def occurrence_params
-    params.require(:lesson_plan_occurrence).permit(:taught_on, :starts_at, :ends_at, :location, :roster_id)
-  end
+  params.require(:lesson_plan_occurrence).permit(
+    :taught_on,
+    :starts_at,
+    :ends_at,
+    :location,
+    :roster_id
+  )
+end
 
   def normalize_time_param(value)
     return nil if value.blank?
